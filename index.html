@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KaamKaaj — Your documents. Your deadlines. Your everyday life, organized.</title>
+<meta name="description" content="KaamKaaj is an offline-first Android app that keeps your documents, bills, reminders and warranties organized in one private place.">
+<meta name="theme-color" content="#1C3326">
+<meta property="og:title" content="KaamKaaj — Your documents. Your deadlines. Organized.">
+<meta property="og:description" content="An offline-first personal management app for Android.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,380;9..144,520;9..144,620&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@property --accent{
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #8BAE3F;
+}
+:root{
+  --bg:#F5F1E6; --bg-raised:#FBF9F3; --ink:#1C2420; --ink-soft:#4B564D;
+  --line: rgba(28,36,32,.12);
+  --accent:#8BAE3F; --accent-ink:#1C2420; --accent-soft: rgba(139,174,63,.16);
+  --accent-text: color-mix(in srgb, var(--accent) 60%, var(--ink) 40%);
+  --forest:#1C3326; --progress-h:4px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15201A; --bg-raised:#1C2A22; --ink:#F1EEE4; --ink-soft:#AEB8AD;
+    --line: rgba(241,238,228,.14);
+    --accent-soft: rgba(139,174,63,.22);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15201A; --bg-raised:#1C2A22; --ink:#F1EEE4; --ink-soft:#AEB8AD;
+  --line: rgba(241,238,228,.14); --accent-soft: rgba(139,174,63,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth; scroll-padding-top: calc(76px + var(--progress-h) + env(safe-area-inset-top,0px)); transition: --accent 1.2s ease;}
+body{
+  background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,sans-serif;
+  line-height:1.5; -webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  transition: background .8s ease, color .8s ease;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:50;}
+.scroll-progress{position:absolute;left:0;top:100%;width:0%;height:var(--progress-h);background:var(--accent);z-index:5;border-radius:0 2px 2px 0;transition:width .12s linear, background .8s ease;}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif; font-weight:520; letter-spacing:-0.01em; line-height:1.05;}
+a{color:inherit}
+img,svg{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,48px);}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+
+/* NAV */
+header{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:40;
+  background:color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;padding:10px 0;flex-wrap:nowrap;}
+@media(min-width:480px){.nav{min-height:68px;}}
+@media(min-width:960px){.nav{min-height:76px;}}
+.brand{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-size:clamp(1.02rem,4.2vw,1.3rem);font-weight:520;flex-shrink:0;white-space:nowrap;margin-left:clamp(8px,3.5vw,60px);}
+.brand-mark{width:clamp(22px,6vw,30px);height:clamp(22px,6vw,30px);border-radius:8px;background:linear-gradient(145deg,var(--accent),var(--forest));flex-shrink:0;position:relative;overflow:hidden;}
+.brand-mark img,.ps-logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;}
+.brand-mark.has-logo,.ps-logo.has-logo{background:var(--bg-raised);}
+.brand-mark.has-logo img,.ps-logo.has-logo img{display:block;}
+.ps-logo{width:18px;height:18px;border-radius:6px;background:var(--accent-soft);position:relative;overflow:hidden;flex-shrink:0;}
+.nav-links{display:flex;gap:clamp(12px,4.5vw,34px);align-items:center;font-size:clamp(.8rem,3vw,.95rem);flex-shrink:0;margin-right:clamp(8px,3.5vw,60px);}
+.nav-links a{text-decoration:none;color:var(--ink-soft);transition:color .25s ease;white-space:nowrap;}
+.nav-links a:hover{color:var(--ink);}
+.nav-links a.btn-primary,.nav-links a.btn-primary:hover{color:var(--accent-ink);}
+.nav-cta{display:none;padding:9px 16px;font-size:.84rem;}
+@media(min-width:720px){.nav-cta{display:inline-flex;padding:13px 26px;font-size:.95rem;}}
+.navmenu-toggle{display:none}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 26px;border-radius:999px;font-weight:600;font-size:.95rem;
+  text-decoration:none;cursor:pointer;border:1px solid transparent;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1), background .4s ease, box-shadow .3s ease;
+}
+.btn-primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 28px -12px color-mix(in srgb, var(--accent) 60%, transparent);}
+.btn-primary:hover{transform:translateY(-2px);}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink);}
+.btn-ghost:hover{background:var(--bg-raised);}
+
+/* MOBILE STICKY CTA */
+.mobile-cta{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:center;padding:14px clamp(20px,5vw,48px) calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top, var(--bg) 55%, transparent);transform:translateY(120%);transition:transform .35s ease;pointer-events:none;}
+.mobile-cta.is-visible{transform:translateY(0);pointer-events:auto;}
+.mobile-cta .btn{width:100%;max-width:360px;}
+@media(min-width:720px){.mobile-cta{display:none;}}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:clamp(48px,12vw,108px) 0 clamp(40px,8vw,80px);}
+.hero-layout{display:flex;flex-direction:column;gap:40px;position:relative;z-index:1;}
+@media(min-width:960px){.hero-layout{flex-direction:row;align-items:center;gap:48px;}}
+.hero-copy{max-width:580px;}
+@media(min-width:960px){.hero-copy{flex:1 1 56%;}}
+.eyebrow-free{font-size:.95rem;color:var(--ink-soft);margin-bottom:18px;max-width:34ch;}
+.hero h1{font-size:clamp(2.3rem,7vw,4.4rem);max-width:13ch;}
+.hero h1 em{font-style:normal;color:var(--accent-text);}
+.hero p.lede{margin-top:22px;font-size:clamp(1rem,2.6vw,1.15rem);color:var(--ink-soft);max-width:46ch;line-height:1.55;}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px;}
+.hero-tags{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin-top:30px;}
+.hero-tags li{font-size:.8rem;padding:7px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft);background:var(--bg-raised);}
+
+.hero-visual{position:relative;display:none;min-height:320px;}
+@media(min-width:720px){.hero-visual{display:block;flex:1 1 44%;}}
+.hero-blob{
+  position:absolute;inset:-6%;border-radius:48px;filter:blur(10px);
+  background:
+    radial-gradient(42% 50% at 28% 28%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 72%),
+    radial-gradient(38% 46% at 76% 68%, color-mix(in srgb, var(--forest) 45%, transparent), transparent 72%);
+  transition: background 1s ease;
+}
+.hero-icon.brand-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:22px;box-shadow:0 24px 56px -22px rgba(28,51,38,.45);z-index:2;}
+.hero-note{position:absolute;background:var(--bg-raised);border:1px solid var(--line);border-radius:16px;padding:10px 14px;font-size:.8rem;box-shadow:0 18px 40px -20px rgba(28,51,38,.3);display:flex;align-items:center;gap:8px;z-index:2;}
+.float-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.n1{top:10%;left:6%;}
+.n2{top:50%;right:2%;}
+.n3{bottom:8%;left:24%;}
+@media(prefers-reduced-motion:no-preference){
+  .hero-note{animation:drift 7s ease-in-out infinite;}
+  .n2{animation-delay:1.3s;}
+  .n3{animation-delay:2.6s;}
+  @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+}
+
+/* SECTIONS */
+section{padding:clamp(56px,9vw,96px) 0;}
+.section-head{max-width:46ch;margin-bottom:44px;}
+.section-head h2{font-size:clamp(1.9rem,3.6vw,2.6rem);}
+.section-head p{color:var(--ink-soft);margin-top:14px;font-size:1.05rem;}
+
+/* FEATURES BENTO */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;}
+.bento .card{grid-column:span 6;}
+@media(min-width:720px){
+  .bento{grid-template-columns:repeat(12,1fr);}
+  .bento .card{grid-column:span 6;}
+  .bento .card.wide{grid-column:span 8;}
+  .bento .card.narrow{grid-column:span 4;}
+}
+.card{
+  background:var(--bg-raised);border:1px solid var(--line);border-radius:24px;
+  padding:28px;transition:border-color .3s ease, transform .3s ease;
+}
+.card:hover{border-color:color-mix(in srgb, var(--accent) 50%, var(--line));}
+.card h3{font-size:1.25rem;margin-bottom:10px;}
+.card p{color:var(--ink-soft);font-size:.96rem;}
+.card .icon{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.card .icon svg{width:20px;height:20px;stroke:var(--accent-text);fill:none;stroke-width:1.8;}
+
+/* PRODUCT DEMO */
+.demo{background:var(--bg-raised);border:1px solid var(--line);border-radius:28px;padding:clamp(20px,4vw,32px);}
+.demo-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.demo-tab{font:inherit;font-size:.85rem;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;transition:background .3s ease,color .3s ease,border-color .3s ease;}
+.demo-tab.is-active{background:var(--accent);border-color:transparent;color:var(--accent-ink);}
+.demo-panel{min-height:150px;}
+.demo-visual{display:flex;flex-direction:column;gap:14px;}
+.demo-row{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem;font-family:'Fraunces',serif;gap:12px;}
+.demo-chip{font-family:'Inter',sans-serif;font-size:.78rem;padding:5px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);white-space:nowrap;}
+.demo-bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;}
+.demo-bar i{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .5s ease;}
+.demo-caption{margin-top:18px;color:var(--ink-soft);font-size:.92rem;}
+
+/* PRIVACY */
+.privacy{background:var(--forest);color:#F1EEE4;border-radius:32px;padding:clamp(32px,6vw,64px);}
+.privacy .wrap{padding:0;max-width:none;}
+.privacy-grid{display:grid;grid-template-columns:1fr;gap:36px;}
+@media(min-width:860px){.privacy-grid{grid-template-columns:1fr 1fr;align-items:center;}}
+.privacy h2{color:#F1EEE4;font-size:clamp(1.9rem,3.6vw,2.5rem);}
+.privacy p{color:rgba(241,238,228,.75);margin-top:16px;font-size:1.02rem;max-width:48ch;}
+.privacy-list{list-style:none;display:flex;flex-direction:column;gap:14px;}
+.privacy-list li{display:flex;gap:12px;align-items:flex-start;color:rgba(241,238,228,.9);font-size:.96rem;}
+.privacy-list .dot{width:7px;height:7px;border-radius:50%;background:#B4D66E;margin-top:8px;flex-shrink:0;}
+
+/* PHILOSOPHY */
+.philosophy{text-align:left;}
+.philosophy blockquote{font-family:'Fraunces',serif;font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:380;max-width:22ch;line-height:1.2;}
+.philosophy cite{display:block;margin-top:20px;font-style:normal;color:var(--ink-soft);font-size:.95rem;}
+
+/* FINAL CTA */
+.final-cta{text-align:center;}
+.final-cta h2{font-size:clamp(2rem,4.4vw,3.2rem);max-width:18ch;margin:0 auto;}
+.final-cta p{color:var(--ink-soft);margin:18px auto 30px;max-width:40ch;font-size:1.05rem;}
+.final-cta .btn-primary{padding:16px 34px;font-size:1.02rem;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:40px 0;}
+.footer-grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;}
+.footer-links{display:flex;gap:22px;font-size:.88rem;color:var(--ink-soft);flex-wrap:wrap;}
+.footer-links a{text-decoration:none;}
+.footer-links a:hover{color:var(--ink);}
+.footer-meta{font-size:.82rem;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav wrap">
+    <a href="#top" class="brand"><span class="brand-mark" aria-hidden="true"></span>KaamKaaj</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download" class="btn btn-primary nav-cta">Download</a>
+    </div>
+  </nav>
+  <div class="scroll-progress" id="scroll-progress" role="progressbar" aria-label="Page scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-layout">
+      <div class="hero-copy">
+        <p class="eyebrow-free">Offline-first · built for Android</p>
+        <h1>Your documents. Your deadlines. <em>Organized.</em></h1>
+        <p class="lede">KaamKaaj keeps the paperwork of everyday life — IDs, bills, warranties, reminders — in one private place on your phone, so nothing quietly expires on you.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="hero-download" href="#" target="_blank" rel="noopener">Download for Android</a>
+          <a class="btn btn-ghost" href="#features">Explore features</a>
+        </div>
+        <ul class="hero-tags">
+          <li>Document Vault</li>
+          <li>Bills &amp; Payments</li>
+          <li>Smart Reminders</li>
+          <li>Warranty Tracking</li>
+        </ul>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-blob"></div>
+        <div class="hero-icon brand-mark"></div>
+        <div class="hero-note n1"><span class="float-dot"></span>Passport expiring soon</div>
+        <div class="hero-note n2"><span class="float-dot"></span>Bill due this week</div>
+        <div class="hero-note n3"><span class="float-dot"></span>Warranty active</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>One workspace for the things you can't afford to forget</h2>
+        <p>Every record you keep in a drawer or a screenshot folder, actually organized and searchable.</p>
+      </div>
+      <div class="bento">
+        <div class="card wide">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <h3>Document Vault</h3>
+          <p>Store document records, track expiry dates, and get reminded before they lapse — IDs, licences, policies, anything with a deadline attached.</p>
+        </div>
+        <div class="card narrow">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h5"/></svg></div>
+          <h3>Document Scanner</h3>
+          <p>Scan paper documents with the camera, with edge detection and perspective correction built in.</p>
+        </div>
+        <div class="card narrow">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg></div>
+          <h3>Bills &amp; Payments</h3>
+          <p>Track recurring and one-off payments, with due dates that never quietly slip past.</p>
+        </div>
+        <div class="card narrow">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Smart Reminders</h3>
+          <p>Set one-time or recurring reminders for anything that matters, so it surfaces exactly when it should.</p>
+        </div>
+        <div class="card wide">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 7 12 3 4 7v10l8 4 8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg></div>
+          <h3>Warranty Management</h3>
+          <p>Keep product warranty details and expiry dates organized, so a broken appliance isn't also a paperwork hunt.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3>Unified Search</h3>
+          <p>Find any saved record in seconds, across every category, without remembering where you filed it.</p>
+        </div>
+        <div class="card">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+          <h3>Backup &amp; Restore</h3>
+          <p>Export supported records to a JSON backup, and restore them whenever you need to.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Built around how the day actually goes</h2>
+        <p>One workspace, four everyday questions — see what each one looks like.</p>
+      </div>
+      <div class="demo">
+        <div class="demo-tabs" role="tablist" aria-label="KaamKaaj categories">
+          <button class="demo-tab is-active" role="tab" aria-selected="true" aria-controls="demo-panel" data-demo="vault" type="button">Document Vault</button>
+          <button class="demo-tab" role="tab" aria-selected="false" aria-controls="demo-panel" data-demo="bills" type="button">Bills &amp; Payments</button>
+          <button class="demo-tab" role="tab" aria-selected="false" aria-controls="demo-panel" data-demo="reminders" type="button">Smart Reminders</button>
+          <button class="demo-tab" role="tab" aria-selected="false" aria-controls="demo-panel" data-demo="warranty" type="button">Warranty</button>
+        </div>
+        <div class="demo-panel" id="demo-panel" role="tabpanel">
+          <div class="demo-visual" data-demo-visual="vault">
+            <div class="demo-row"><span>Passport</span><span class="demo-chip">Expires in 42 days</span></div>
+            <div class="demo-bar"><i style="width:78%"></i></div>
+          </div>
+          <div class="demo-visual" data-demo-visual="bills" hidden>
+            <div class="demo-row"><span>Electricity bill</span><span class="demo-chip">Due in 3 days</span></div>
+            <div class="demo-bar"><i style="width:40%"></i></div>
+          </div>
+          <div class="demo-visual" data-demo-visual="reminders" hidden>
+            <div class="demo-row"><span>Renew gym membership</span><span class="demo-chip">Tomorrow, 9:00 AM</span></div>
+            <div class="demo-bar"><i style="width:92%"></i></div>
+          </div>
+          <div class="demo-visual" data-demo-visual="warranty" hidden>
+            <div class="demo-row"><span>Refrigerator</span><span class="demo-chip">8 months left</span></div>
+            <div class="demo-bar"><i style="width:60%"></i></div>
+          </div>
+          <p class="demo-caption" data-demo-caption>Documents nearing expiry rise to the top automatically.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <div class="privacy">
+        <div class="privacy-grid">
+          <div>
+            <h2>Local-first, by design</h2>
+            <p>KaamKaaj's core personal records are designed for local storage on your device. No account is required to use the core experience — your documents stay where you put them.</p>
+          </div>
+          <ul class="privacy-list">
+            <li><span class="dot"></span>Core records are designed to live on your device, not a server.</li>
+            <li><span class="dot"></span>No account needed to use the core features.</li>
+            <li><span class="dot"></span>Backups are created and restored as JSON files you control.</li>
+            <li><span class="dot"></span>Light and dark themes, matched to your system.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="philosophy">
+    <div class="wrap">
+      <blockquote>
+        Organizing isn't a feature. It's what happens when clutter has somewhere to go.
+        <cite>— the idea behind KaamKaaj</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <section id="download" class="final-cta">
+    <div class="wrap">
+      <h2>Get your documents in order</h2>
+      <p>Free to use, no account required to get started.</p>
+      <a class="btn btn-primary" id="final-download" href="#" target="_blank" rel="noopener">Download for Android</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-grid">
+    <a href="#top" class="brand"><span class="brand-mark" aria-hidden="true"></span>KaamKaaj</a>
+    <nav class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download">Download</a>
+    </nav>
+    <p class="footer-meta">Android 7.0 (API 24) and above</p>
+  </div>
+</footer>
+
+<div class="mobile-cta" id="mobile-cta">
+  <a class="btn btn-primary" id="mobile-cta-download" href="#" target="_blank" rel="noopener">Download for Android</a>
+</div>
+
+<script>
+// ---- CONFIG: replace this with your direct APK download URL ----
+const DOWNLOAD_URL = "https://github.com/aiwebnix-oss/kamkaaj-update/releases/latest";
+// -------------------------------------------------------------------
+document.querySelectorAll('#hero-download, #final-download').forEach(el => el.href = DOWNLOAD_URL);
+const mobileCtaLink = document.getElementById('mobile-cta-download');
+if (mobileCtaLink) mobileCtaLink.href = DOWNLOAD_URL;
+
+// Mobile sticky download bar
+(function(){
+  const bar = document.getElementById('mobile-cta');
+  const downloadSection = document.getElementById('download');
+  if (!bar) return;
+  let hideNearEnd = false;
+  if ('IntersectionObserver' in window && downloadSection) {
+    new IntersectionObserver(entries => {
+      hideNearEnd = entries[0].isIntersecting;
+      toggle();
+    }, { threshold: 0.3 }).observe(downloadSection);
+  }
+  function toggle(){
+    const pastHero = window.scrollY > window.innerHeight * 0.6;
+    bar.classList.toggle('is-visible', pastHero && !hideNearEnd);
+  }
+  window.addEventListener('scroll', toggle, { passive: true });
+  toggle();
+})();
+
+// Demo tabs for the "Built around how the day actually goes" section
+(function(){
+  const tabs = document.querySelectorAll('.demo-tab');
+  const visuals = document.querySelectorAll('[data-demo-visual]');
+  const caption = document.querySelector('[data-demo-caption]');
+  const captions = {
+    vault: "Documents nearing expiry rise to the top automatically.",
+    bills: "Recurring and one-time dues stay visible until they're paid.",
+    reminders: "One-time and recurring reminders surface exactly when they should.",
+    warranty: "Warranty coverage sits next to the product it protects."
+  };
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const key = tab.dataset.demo;
+      tabs.forEach(t => { const on = t === tab; t.classList.toggle('is-active', on); t.setAttribute('aria-selected', on); });
+      visuals.forEach(v => { v.hidden = v.dataset.demoVisual !== key; });
+      if (caption) caption.textContent = captions[key];
+    });
+  });
+})();
+
+// ---- CONFIG: paste your KaamKaaj app logo's direct image URL here ----
+const APP_LOGO_URL = "";
+// ------------------------------------------------------------------------
+(function(){
+  if (!APP_LOGO_URL || !APP_LOGO_URL.trim()) return;
+  document.querySelectorAll('.brand-mark, .ps-logo').forEach(slot => {
+    const img = document.createElement('img');
+    img.src = APP_LOGO_URL;
+    img.alt = 'KaamKaaj logo';
+    img.loading = 'lazy';
+    img.onload = () => slot.classList.add('has-logo');
+    img.onerror = () => img.remove();
+    slot.appendChild(img);
+  });
+})();
+
+// Scroll progress bar
+(function(){
+  const bar = document.getElementById('scroll-progress');
+  if (!bar) return;
+  let ticking = false;
+  function update(){
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - doc.clientHeight;
+    const pct = scrollable > 0 ? (doc.scrollTop / scrollable) * 100 : 0;
+    bar.style.width = pct + '%';
+    bar.setAttribute('aria-valuenow', Math.round(pct));
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }, { passive: true });
+  update();
+})();
+
+// Dynamic Material-You-style accent cycling
+(function(){
+  const palettes = [
+    {accent:'#8BAE3F'}, // lime/sage
+    {accent:'#D6A24A'}, // warm amber
+    {accent:'#6E93B7'}, // muted blue
+    {accent:'#A68FCB'}, // soft lavender
+    {accent:'#5FA98A'}  // sage green
+  ];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+  let i = 0;
+  setInterval(() => {
+    i = (i + 1) % palettes.length;
+    document.documentElement.style.setProperty('--accent', palettes[i].accent);
+  }, 9000);
+})();
+</script>
+</body>
+</html>

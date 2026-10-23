@@ -1,0 +1,6 @@
+{
+  "name": "KaamKaaj",
+  "description": "Personal management app for storing documents, expiry tracking, bills and payments, warranties, and reminders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
